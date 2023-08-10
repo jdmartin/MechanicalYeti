@@ -21,7 +21,7 @@ slashutils.begin();
 
 //Initialize the xmas database:
 if (process.env.enable_xmas === "true") {
-    const xmasdb = require("./db/xmasdb.js");
+    const xmasdb = require("./utils/xmasdb.js");
     const xmas = new xmasdb.CreateXmasDatabase();
     xmas.startup();
 }

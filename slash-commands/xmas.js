@@ -1,6 +1,6 @@
 const { ActionRowBuilder, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle } = require("discord.js");
 const utils = require("../utils/speedyutils.js");
-const xmasutils = require("../db/xmasdb.js");
+const xmasutils = require("../utils/xmasdb.js");
 const xmas = new xmasutils.XmasTools();
 const client = utils.client;
 

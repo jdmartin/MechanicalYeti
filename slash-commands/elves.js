@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
 
-const xmas = require("../db/xmasdb.js");
+const xmas = require("../utils/xmasdb.js");
 const xmasDBHelper = new xmas.XmasDisplayTools();
 
 module.exports = {
