@@ -35,7 +35,11 @@ client.once("ready", () => {
 
     //Start the heartbeat
     const heartbeat = new heart.Heartbeat();
-    heartbeat.startBeating();
+    if (process.env.heart_type === 'push') {
+        heartbeat.startPushing();
+    } else {
+        heartbeat.startBeating();
+    }
 });
 
 //Handle slash commands, which are 'interactions'
