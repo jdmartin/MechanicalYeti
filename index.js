@@ -37,7 +37,7 @@ client.once("ready", () => {
     const heartbeat = new heart.Heartbeat();
     if (process.env.heart_type === 'push') {
         heartbeat.startPushing();
-    } else {
+    } else if (process.env.heart_type === 'beating') {
         heartbeat.startBeating();
     }
 });
