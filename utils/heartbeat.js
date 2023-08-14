@@ -1,34 +1,11 @@
 require("dotenv").config();
-const express = require("express");
+const fs = require('fs');
 const http = require("http");
-const app = express();
-const port = process.env.speedyport;
-const bind_ip = process.env.bind_ip;
+const net = require('net');
 
-const helmet = require("helmet");
+const socketPath = '/tmp/yeti-socket';
 
 class Heartbeat {
-    startBeating() {
-        //These are tailored to my setup. If you're starting elsewhere,
-        //see the docs: https://helmetjs.github.io/
-        app.use(helmet.contentSecurityPolicy());
-        app.use(helmet.dnsPrefetchControl());
-        app.use(helmet.hidePoweredBy());
-        app.use(helmet.ieNoOpen());
-        app.use(helmet.permittedCrossDomainPolicies());
-        app.use(helmet.referrerPolicy());
-        app.use(helmet.xssFilter());
-
-        app.get(process.env.HEARTBEAT_PATH, (req, res) => {
-            res.set("Cache-control", "public, max-age=86400");
-            res.send("🐢");
-        });
-
-        app.listen(port, bind_ip, () => {
-            console.log(`Heartbeat beating on http://${bind_ip}:${port}${process.env.HEARTBEAT_PATH}`);
-        });
-    }
-
     startPushing() {
         function callURL() {
             const url = process.env.MONITOR_URL;
@@ -37,6 +14,8 @@ class Heartbeat {
             }).on('error', (error) => {
                 console.error(`Error calling URL: ${error.message}`);
             });
+
+            console.log("Mechanical Yeti Chasing You!");
         }
 
         callURL();
@@ -44,6 +23,45 @@ class Heartbeat {
         // Call the URL every 300 seconds (3 minutes) using the interval timer
         const interval = 298000; // 298 seconds * 1000 milliseconds
         setInterval(callURL, interval);
+    }
+
+    startSocket() {
+        // Remove the socket file if it exists
+        if (fs.existsSync(socketPath)) {
+            fs.unlinkSync(socketPath);
+        }
+
+        const unixServer = net.createServer(function (client) {
+            //console.log('Client connected!');
+
+            // Sending a message to the connected client
+            client.write('RAAR!\n');
+
+            // Handling client disconnection
+            //client.on('end', function() {
+            //    console.log('Client disconnected');
+            //});
+        });
+
+        // Start listening on the Unix socket
+        unixServer.listen(socketPath, function () {
+            console.log('Yeti socket started...');
+            console.log("Mechanical Yeti Chasing You!");
+        });
+
+        // Graceful shutdown
+        process.on('SIGINT', function () {
+            console.log('Shutting down server...');
+
+            unixServer.close(function () {
+                // Remove the socket file after server is closed
+                if (fs.existsSync(socketPath)) {
+                    fs.unlinkSync(socketPath);
+                }
+                console.log('Server closed');
+                process.exit(0);
+            });
+        });
     }
 }
 

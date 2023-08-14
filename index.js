@@ -31,14 +31,12 @@ client.once("ready", () => {
     // prints "Ready!" to the console once the bot is online
     client.user.setActivity("RAAAR", { type: 2 });
 
-    console.log("Mechanical Yeti Chasing You!");
-
     //Start the heartbeat
     const heartbeat = new heart.Heartbeat();
     if (process.env.heart_type === 'push') {
         heartbeat.startPushing();
-    } else if (process.env.heart_type === 'beating') {
-        heartbeat.startBeating();
+    } else if (process.env.heart_type === 'socket') {
+        heartbeat.startSocket();
     }
 });
 
