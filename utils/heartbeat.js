@@ -2,10 +2,8 @@ require("dotenv").config();
 const fs = require('fs');
 const http = require("http");
 const net = require('net');
-const os = require('os');
-const path = require('path');
 
-const socketPath = path.join(os.tmpdir(), 'yeti-socket'); // Construct the socket path using os.tmpdir()
+const socketPath = '/run/yeti/yeti-socket'; // Construct the socket path using os.tmpdir()
 
 class Heartbeat {
     startPushing() {
