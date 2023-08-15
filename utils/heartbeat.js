@@ -31,7 +31,7 @@ class Heartbeat {
         }
 
         const unixServer = net.createServer(function (client) {
-            // HTTP response components
+            // HTTP response components (because nginx)
             const responseStatusLine = 'HTTP/1.1 200 OK';
             const responseHeaders = 'Content-Type: text/plain\r\n';
             const responseBody = 'RAAR!\n';
