@@ -3,8 +3,6 @@ const fs = require('fs');
 const http = require("http");
 const net = require('net');
 
-const socketPath = './yeti-socket';
-
 class Heartbeat {
     startPushing() {
         function callURL() {
@@ -26,25 +24,31 @@ class Heartbeat {
     }
 
     startSocket() {
+        const socketPath = '/tmp/yeti-socket.sock';
         // Remove the socket file if it exists
         if (fs.existsSync(socketPath)) {
             fs.unlinkSync(socketPath);
         }
 
         const unixServer = net.createServer(function (client) {
-            //console.log('Client connected!');
+            // HTTP response components
+            const responseStatusLine = 'HTTP/1.1 200 OK';
+            const responseHeaders = 'Content-Type: text/plain\r\n';
+            const responseBody = 'RAAR!\n';
 
-            // Sending a message to the connected client
-            client.write('RAAR!\n');
+            // Combine the components to create the full response
+            const response = `${responseStatusLine}\r\n${responseHeaders}\r\n${responseBody}`;
 
-            // Handling client disconnection
-            //client.on('end', function() {
-            //    console.log('Client disconnected');
-            //});
+            // Send the response to the connected client
+            client.write(response);
+
+            // Close the connection after sending the response
+            client.end();
         });
 
         // Start listening on the Unix socket
         unixServer.listen(socketPath, function () {
+            fs.chmodSync(socketPath, '775');
             console.log('Yeti socket started...');
             console.log("Mechanical Yeti Chasing You!");
         });
