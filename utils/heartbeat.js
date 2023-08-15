@@ -3,7 +3,7 @@ const fs = require('fs');
 const http = require("http");
 const net = require('net');
 
-const socketPath = '/run/yeti/yeti-socket'; // Construct the socket path using os.tmpdir()
+const socketPath = './yeti-socket';
 
 class Heartbeat {
     startPushing() {
