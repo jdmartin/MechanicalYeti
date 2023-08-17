@@ -8,7 +8,7 @@ const schedule = require("node-schedule");
 const utils = require("./utils/speedyutils.js");
 const slash = require("./utils/deploy-slash-commands");
 const heart = require("./utils/heartbeat.js");
-const { InteractionType } = require("discord.js");
+const { InteractionType, ActivityType } = require("discord.js");
 
 //Get some essential variables from the helper files:
 const client = utils.client;
@@ -29,7 +29,7 @@ if (process.env.enable_xmas === "true") {
 //Once that's done, let's move on to main.
 client.once("ready", () => {
     // prints "Ready!" to the console once the bot is online
-    client.user.setActivity("RAAAR", { type: 2 });
+    client.user.setActivity("RAAAAAAR!", { type: ActivityType.Custom });
 
     //Start the heartbeat
     const heartbeat = new heart.Heartbeat();
