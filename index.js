@@ -1,14 +1,11 @@
 //Load the config file.
 require("dotenv").config();
 
-//Libraries
-const schedule = require("node-schedule");
-
 //Load helper files
 const utils = require("./utils/speedyutils.js");
 const slash = require("./utils/deploy-slash-commands");
 const heart = require("./utils/heartbeat.js");
-const { InteractionType, ActivityType } = require("discord.js");
+const { ActivityType, InteractionType } = require("discord.js");
 
 //Get some essential variables from the helper files:
 const client = utils.client;
