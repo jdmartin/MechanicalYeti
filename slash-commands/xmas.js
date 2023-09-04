@@ -4,9 +4,6 @@ const xmasutils = require("../utils/xmasdb.js");
 const xmas = new xmasutils.XmasTools();
 const client = utils.client;
 
-//Load the config file.
-require("dotenv").config();
-
 module.exports = {
     data: new SlashCommandBuilder().setName("xmas").setDescription("Christmas Cards"),
 

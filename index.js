@@ -1,6 +1,3 @@
-//Load the config file.
-require("dotenv").config();
-
 //Load helper files
 const utils = require("./utils/speedyutils.js");
 const slash = require("./utils/deploy-slash-commands");

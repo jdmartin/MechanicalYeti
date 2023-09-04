@@ -1,4 +1,3 @@
-require("dotenv").config();
 const { AttachmentBuilder, EmbedBuilder } = require("discord.js");
 const sqlite3 = require("better-sqlite3");
 const ExcelJS = require('exceljs');
