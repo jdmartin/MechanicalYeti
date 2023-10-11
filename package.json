@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "better-sqlite3": "^8.5.0",
+    "better-sqlite3": "^9.0.0",
     "date-fns": "^2.30.0",
     "discord.js": "^14.12.1",
     "exceljs": "^4.3.0",
