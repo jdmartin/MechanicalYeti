@@ -73,8 +73,19 @@ module.exports = {
 
                 xmas.addElf(theName, xmasCardsCount, xmasNotes, processedAddress);
 
+                xmas_response = `
+                ${process.env.xmas_message}
+                ${process.env.xmas_blankline}
+                ${process.env.xmas_name}
+                ${process.env.xmas_street}
+                ${process.env.xmas_town}
+                ${process.env.xmas_country}
+                ${process.env.xmas_blankline}
+                Reminder: ${process.env.xmas_instructions}
+                `
+
                 await receivedInteraction.reply({
-                    content: process.env.xmas_address,
+                    content: xmas_response,
                     ephemeral: true,
                 });
 
