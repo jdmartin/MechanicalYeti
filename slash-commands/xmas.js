@@ -89,7 +89,7 @@ module.exports = {
                 ${process.env.xmas_country}
                 ${process.env.xmas_blankline}
                 Reminder: I've got you down for ${cardCountMessage} cards.
-                
+
                 ${process.env.xmas_instructions}
                 `
                 console.log(`${theName} will send ${cardCountMessage} cards. They added: ${xmasNotes}`);
