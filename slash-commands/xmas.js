@@ -62,7 +62,6 @@ module.exports = {
                 } else {
                     processedAddress = xmasAddress;
                 }
-                console.log({ xmasCardsCount, xmasNotes });
 
                 let theName = "";
                 if (receivedInteraction.member.nickname != null) {
@@ -91,16 +90,14 @@ module.exports = {
                 ${process.env.xmas_blankline}
                 Reminder: I've got you down for ${cardCountMessage} cards. ${process.env.xmas_instructions}
                 `
+                console.log(`${theName} will send ${cardCountMessage} cards. They added: ${xmasNotes}`);
 
                 await receivedInteraction.reply({
                     content: xmas_response,
                     ephemeral: true,
                 });
 
-                const user = client.users.cache.get(interaction.member.user.id);
-                const name = interaction.user.username;
-
-                const DM = await interaction.user.send({
+                await interaction.user.send({
                     content: xmas_response
                 });
 
