@@ -89,6 +89,13 @@ module.exports = {
                     ephemeral: true,
                 });
 
+                const user = client.users.cache.get(interaction.member.user.id);
+                const name = interaction.user.username;
+
+                const DM = await interaction.user.send({
+                    content: xmas_response
+                });
+
                 // Remove the event listener after handling the interaction
                 client.off("interactionCreate", handleInteraction);
             }
