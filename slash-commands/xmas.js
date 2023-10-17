@@ -73,6 +73,14 @@ module.exports = {
 
                 xmas.addElf(theName, xmasCardsCount, xmasNotes, processedAddress);
 
+                let cardCountMessage = ""
+
+                if (xmasCardsCount.toLowerCase() === 'all') {
+                    cardCountMessage = "all the"
+                } else {
+                    cardCountMessage = xmasCardsCount
+                }
+
                 xmas_response = `
                 ${process.env.xmas_message}
                 ${process.env.xmas_blankline}
@@ -81,7 +89,7 @@ module.exports = {
                 ${process.env.xmas_town}
                 ${process.env.xmas_country}
                 ${process.env.xmas_blankline}
-                Reminder: ${process.env.xmas_instructions}
+                Reminder: I've got you down for ${cardCountMessage} cards. ${process.env.xmas_instructions}
                 `
 
                 await receivedInteraction.reply({
