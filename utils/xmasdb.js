@@ -137,13 +137,22 @@ class XmasDisplayTools {
     }
 
     stats() {
-        const elfStatsEmbed = new EmbedBuilder().setColor(0xffffff).setTitle("🧝‍♀️ Happy Little Stats 🧝").setFooter({ text: "(Does not count replies of 'all')", });
+        const elfStatsEmbed = new EmbedBuilder().setColor(0xffffff).setTitle("🧝‍♀️ Happy Little Stats 🧝").setFooter({ text: "Includes (Elves who chose 'all' - 1 (because self)) * Total Elves" });
+
+        // Get something to replace 'all' in the count
+        var numberWhoChoseAll = xmasdb.prepare("SELECT COUNT(*) name FROM elves WHERE count IS NULL AND year = ?;");
+        var numberWhoChoseAllResults = numberWhoChoseAll.all(currentYear);
+
+        var allElfCount = xmasdb.prepare("SELECT COUNT(*) name FROM elves WHERE year = ?;");
+        var allElfCountResults = allElfCount.all(currentYear);
+
+        var actualNumberCardsWherePeopleChoseAll = (numberWhoChoseAllResults[0].name - 1) * allElfCountResults[0].name;
 
         var cardTotal = xmasdb.prepare("SELECT SUM(count) FROM elves WHERE year = ?");
-        var cardTotalResults = cardTotal.pluck().get(currentYear);
+        var cardTotalResults = cardTotal.pluck().get(currentYear) + actualNumberCardsWherePeopleChoseAll;
 
         var allTimeCardTotal = xmasdb.prepare("SELECT SUM(count) FROM elves");
-        var allTimeCardTotalResults = allTimeCardTotal.pluck().get();
+        var allTimeCardTotalResults = allTimeCardTotal.pluck().get() + actualNumberCardsWherePeopleChoseAll;
 
         if (cardTotalResults > 0) {
             elfStatsEmbed.addFields({
