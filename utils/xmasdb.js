@@ -137,8 +137,6 @@ class XmasDisplayTools {
     }
 
     stats() {
-        const elfStatsEmbed = new EmbedBuilder().setColor(0xffffff).setTitle("🧝‍♀️ Happy Little Stats 🧝").setFooter({ text: "Includes (Elves who chose 'all' - 1 (because self)) * Total Elves" });
-
         // Get something to replace 'all' in the count
         var numberWhoChoseAll = xmasdb.prepare("SELECT COUNT(*) name FROM elves WHERE count IS NULL AND year = ?;");
         var numberWhoChoseAllResults = numberWhoChoseAll.all(currentYear);
@@ -151,19 +149,27 @@ class XmasDisplayTools {
         var cardTotal = xmasdb.prepare("SELECT SUM(count) FROM elves WHERE year = ?");
         var cardTotalResults = cardTotal.pluck().get(currentYear) + actualNumberCardsWherePeopleChoseAll;
 
-        var allTimeCardTotal = xmasdb.prepare("SELECT SUM(count) FROM elves");
-        var allTimeCardTotalResults = allTimeCardTotal.pluck().get() + actualNumberCardsWherePeopleChoseAll;
+        // People may have offered to send more than needed
+        var expectedCardMax = (allElfCountResults[0].name * (allElfCountResults[0].name - 1));
+
+        const elfStatsEmbed = new EmbedBuilder().setColor(0xffffff).setTitle("🧝‍♀️ Happy Little Stats 🧝").setFooter({ text: "Includes (Elves who chose 'all' - 1 (because self)) * Total Elves" });
 
         if (cardTotalResults > 0) {
-            elfStatsEmbed.addFields({
-                name: `Total Cards for ${currentYear.toString()}:`,
-                value: cardTotalResults.toString(),
-                inline: false,
-            });
+            let actualCardCount = cardTotalResults.toString();
+
+            if (cardTotalResults > expectedCardMax) {
+                actualCardCount = expectedCardMax.toString();
+            }
 
             elfStatsEmbed.addFields({
-                name: "All-Time Card Total:",
-                value: allTimeCardTotalResults.toString(),
+                name: `Maximum Possible Per Person:`,
+                value: (expectedCardMax / allElfCountResults[0].name).toString(),
+                inline: false,
+            })
+
+            elfStatsEmbed.addFields({
+                name: `Current Number of Expected Cards for ${currentYear.toString()}:`,
+                value: actualCardCount,
                 inline: false,
             });
         } else {
