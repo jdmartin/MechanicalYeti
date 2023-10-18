@@ -206,7 +206,7 @@ class XmasDisplayTools {
             const availableNames = allNames.filter(name => name !== person.name);
 
             const matches = [];
-            while (count > 0) {
+            while (count > 0 && availableNames.length > 0) {
                 const randomIndex = Math.floor(Math.random() * availableNames.length);
                 const match = availableNames[randomIndex];
                 matches.push(match);
