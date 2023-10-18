@@ -109,7 +109,7 @@ class XmasDisplayTools {
 
     show() {
         const elvesEmbed = new EmbedBuilder().setColor(0xffffff).setTitle("🧝‍♀️ Good Little Elves 🧝").setFooter({
-            text: "These good elves are known to the Infinite Speedyflight. (Addresses in attached spreadsheet) Use this information wisely.",
+            text: "RAAR! (Addresses in attached spreadsheet) Use this information wisely.",
         });
         var elfSql = xmasdb.prepare("SELECT * FROM elves WHERE year = ? ORDER BY name ASC");
         var elfResults = elfSql.all(currentYear);
@@ -120,7 +120,7 @@ class XmasDisplayTools {
                     theCount = "all"
                 }
                 elvesEmbed.addFields({
-                    name: row.name,
+                    name: `__${row.name}__`,
                     value: "Number of Cards: " + theCount + "\nNotes: " + row.notes,
                     inline: false,
                 });
@@ -181,6 +181,46 @@ class XmasDisplayTools {
         }
 
         return elfStatsEmbed;
+    }
+
+    matches() {
+        const elfMatchesEmbed = new EmbedBuilder().setColor(0xffffff).setTitle("🧝‍♀️ Suggested Matches 🧝");
+
+        // Step 1: Retrieve preferences for this year
+        const preferencesQuery = xmasdb.prepare("SELECT name, count FROM elves WHERE year = ?;");
+        const preferencesResults = preferencesQuery.all(currentYear);
+
+        // Create an array of names
+        const allNames = preferencesResults.map(person => person.name);
+
+        // Step 2: Set count to total names - 1 for those with null count
+        for (let person of preferencesResults) {
+            if (person.count === null) {
+                person.count = allNames.length - 1;
+            }
+        }
+
+        // Step 3 and 4: Create matches and print the list of names
+        for (let person of preferencesResults) {
+            let count = person.count;
+            const availableNames = allNames.filter(name => name !== person.name);
+
+            const matches = [];
+            while (count > 0) {
+                const randomIndex = Math.floor(Math.random() * availableNames.length);
+                const match = availableNames[randomIndex];
+                matches.push(match);
+                availableNames.splice(randomIndex, 1);
+                count--;
+            }
+            matches.sort()
+            elfMatchesEmbed.addFields({
+                name: `__For ${person.name}:__`,
+                value: matches.join(', ')
+            });
+        }
+
+        return elfMatchesEmbed;
     }
 }
 
