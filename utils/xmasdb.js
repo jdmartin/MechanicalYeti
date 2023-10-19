@@ -74,8 +74,14 @@ class XmasDisplayTools {
 
         // Add data rows to the worksheet
         rows.forEach(row => {
-            // Replace newline characters with ', ' in the address field
+            // Replace newline characters with ', ' in the address and notes fields
             row.address = row.address.replace(/\\n/g, ', ');
+            row.address = row.address.replace(/\\'/g, '\'');
+            row.address = row.address.slice(1, -1);
+
+            row.notes = row.notes.replace(/\\n/g, ', ');
+            row.notes = row.notes.replace(/\\'/g, '\'');
+            row.notes = row.notes.slice(1, -1);
 
             // If count is 'null', then we probably have a case where the person chose 'all'
             if (row.count == null) {
