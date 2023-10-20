@@ -1,8 +1,6 @@
 const { ActionRowBuilder, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle } = require("discord.js");
-const utils = require("../utils/speedyutils.js");
 const xmasutils = require("../utils/xmasdb.js");
 const xmas = new xmasutils.XmasTools();
-const client = utils.client;
 
 module.exports = {
     data: new SlashCommandBuilder().setName("xmas").setDescription("Christmas Cards"),
@@ -51,11 +49,14 @@ module.exports = {
         // Show the modal to the user
         await interaction.showModal(modal);
 
-        const handleInteraction = async (receivedInteraction) => {
-            if (receivedInteraction.isModalSubmit() && receivedInteraction.customId === "xmasModal") {
-                const xmasCardsCount = receivedInteraction.fields.getTextInputValue("xmasCardsCountInput");
-                const xmasNotes = receivedInteraction.fields.getTextInputValue("xmasNotesInput");
-                const xmasAddress = receivedInteraction.fields.getTextInputValue("xmasAddressInput");
+        try {
+            const filter = (interaction) => interaction.customId === 'xmasModal';
+            const collectedInteraction = await interaction.awaitModalSubmit({ filter, time: 300000 });
+
+            if (collectedInteraction) {
+                const xmasCardsCount = collectedInteraction.fields.getTextInputValue("xmasCardsCountInput");
+                const xmasNotes = collectedInteraction.fields.getTextInputValue("xmasNotesInput");
+                const xmasAddress = collectedInteraction.fields.getTextInputValue("xmasAddressInput");
                 var processedAddress = "";
                 if (xmasAddress.length == 0) {
                     processedAddress = "On File";
@@ -64,37 +65,37 @@ module.exports = {
                 }
 
                 let theName = "";
-                if (receivedInteraction.member.nickname != null) {
-                    theName = receivedInteraction.member.nickname;
+                if (collectedInteraction.member.nickname != null) {
+                    theName = collectedInteraction.member.nickname;
                 } else {
-                    theName = receivedInteraction.user.username;
+                    theName = collectedInteraction.user.username;
                 }
 
                 xmas.addElf(theName, xmasCardsCount, xmasNotes, processedAddress);
 
-                let cardCountMessage = ""
+                let cardCountMessage = "";
 
                 if (xmasCardsCount.toLowerCase() === 'all') {
-                    cardCountMessage = "all the"
+                    cardCountMessage = "all the";
                 } else {
-                    cardCountMessage = xmasCardsCount
+                    cardCountMessage = xmasCardsCount;
                 }
 
                 xmas_response = `
-                ${process.env.xmas_message}
-                ${process.env.xmas_blankline}
-                ${process.env.xmas_name}
-                ${process.env.xmas_street}
-                ${process.env.xmas_town}
-                ${process.env.xmas_country}
-                ${process.env.xmas_blankline}
-                Reminder: I've got you down for ${cardCountMessage} cards.
-
-                ${process.env.xmas_instructions}
-                `
+                    ${process.env.xmas_message}
+                    ${process.env.xmas_blankline}
+                    ${process.env.xmas_name}
+                    ${process.env.xmas_street}
+                    ${process.env.xmas_town}
+                    ${process.env.xmas_country}
+                    ${process.env.xmas_blankline}
+                    Reminder: I've got you down for ${cardCountMessage} cards.
+        
+                    ${process.env.xmas_instructions}
+                    `;
                 console.log(`${theName} will send ${cardCountMessage} cards. They added: ${xmasNotes}`);
 
-                await receivedInteraction.reply({
+                await collectedInteraction.reply({
                     content: xmas_response,
                     ephemeral: true,
                 });
@@ -102,12 +103,13 @@ module.exports = {
                 await interaction.user.send({
                     content: xmas_response
                 });
-
-                // Remove the event listener after handling the interaction
-                client.off("interactionCreate", handleInteraction);
             }
-        };
-
-        client.on("interactionCreate", handleInteraction);
-    },
+        } catch (error) {
+            if (error.message === 'Unknown interaction') {
+                console.log(`${interaction.user.tag} timed out.`);
+            } else {
+                console.error(error);
+            }
+        }
+    }
 };
