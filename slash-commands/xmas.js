@@ -105,7 +105,7 @@ module.exports = {
                 });
             }
         } catch (error) {
-            if (error.message === 'Unknown interaction') {
+            if (error.code === 'InteractionCollectorError') {
                 console.log(`${interaction.user.tag} timed out.`);
             } else {
                 console.error(error);
