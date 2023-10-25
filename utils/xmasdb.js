@@ -115,8 +115,12 @@ class XmasDisplayTools {
 
     show() {
         const elvesEmbed = new EmbedBuilder().setColor(0xffffff).setTitle("🧝‍♀️ Good Little Elves 🧝").setFooter({
-            text: "RAAR! (Addresses in attached spreadsheet) Use this information wisely.",
+            text: "RAAR! (Notes and Addresses in attached spreadsheet) Use this information wisely.",
         });
+        const sendingToEveryone = [];
+
+        // Create a comma-separated list of names
+        let allMatchValue = sendingToEveryone.join(' **|** ');
         var elfSql = xmasdb.prepare("SELECT * FROM elves WHERE year = ? ORDER BY name ASC");
         var elfResults = elfSql.all(currentYear);
         if (elfResults.length > 0) {
@@ -124,6 +128,7 @@ class XmasDisplayTools {
                 let theCount = row.count;
                 if (theCount == null) {
                     theCount = "all"
+                    sendingToEveryone.push(row.name);
                 }
 
                 //Make this embed a little more concise
@@ -133,11 +138,25 @@ class XmasDisplayTools {
                     theElfValue = "Number of Cards: " + theCount + "\nNotes: " + row.notes;
                 }
 
-                elvesEmbed.addFields({
-                    name: `__${row.name}__`,
-                    value: theElfValue,
-                    inline: false,
-                });
+                if (theCount !== "all") {
+                    elvesEmbed.addFields({
+                        name: `__${row.name}__`,
+                        value: theElfValue,
+                        inline: false,
+                    });
+                }
+            });
+            // Sort the sendingToEveryone array
+            sendingToEveryone.sort();
+            // Create a list
+            let formattedList = "";
+            sendingToEveryone.forEach((item, index) => {
+                formattedList += (index + 1) + ". " + item + "\n";
+            });
+            // Add the list of people sending to all
+            elvesEmbed.addFields({
+                name: "__Sending to Everyone:__",
+                value: formattedList
             });
         } else {
             elvesEmbed.addFields({
@@ -220,8 +239,11 @@ class XmasDisplayTools {
 
         // Sort the sendingToEveryone array
         sendingToEveryone.sort();
-        // Create a comma-separated list of names
-        let allMatchValue = sendingToEveryone.join(' **|** ');
+        // Create a list
+        let formattedList = "";
+        sendingToEveryone.forEach((item, index) => {
+            formattedList += (index + 1) + ": " + item + "\n";
+        });
 
         //Add a bit of space.
         elfMatchesEmbed.addFields({
@@ -232,7 +254,7 @@ class XmasDisplayTools {
         //Add the list of people sending to all
         elfMatchesEmbed.addFields({
             name: "__Sending to Everyone:__",
-            value: allMatchValue
+            value: formattedList
         });
 
         // Step 3 and 4: Create matches and print the list of names
@@ -252,9 +274,11 @@ class XmasDisplayTools {
 
             //Process people who aren't sending to all and add to embed
             if (!sendingToEveryone.includes(person.name)) {
+                // Create a formatted list with numbering
+                const formattedMatches = matches.map((match, index) => `${index + 1}: ${match}`).join('\n');
                 elfMatchesEmbed.addFields({
                     name: `__For ${person.name}:__`,
-                    value: matches.join(' **|** ')
+                    value: formattedMatches
                 });
             }
         }
