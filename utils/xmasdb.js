@@ -200,11 +200,32 @@ class XmasDisplayTools {
         const allNames = preferencesResults.map(person => person.name);
 
         // Step 2: Set count to total names - 1 for those with null count
+        // Also, identify those people who are sending to all.
+        const sendingToEveryone = [];
+
         for (let person of preferencesResults) {
             if (person.count === null) {
                 person.count = allNames.length - 1;
+                sendingToEveryone.push(person.name);
             }
         }
+
+        // Sort the sendingToEveryone array
+        sendingToEveryone.sort();
+        // Create a comma-separated list of names
+        let allMatchValue = sendingToEveryone.join(', ');
+
+        //Add a bit of space.
+        elfMatchesEmbed.addFields({
+            name: "   ",
+            value: "   "
+        });
+
+        //Add the list of people sending to all
+        elfMatchesEmbed.addFields({
+            name: "__Sending to Everyone:__",
+            value: allMatchValue
+        });
 
         // Step 3 and 4: Create matches and print the list of names
         for (let person of preferencesResults) {
@@ -220,10 +241,14 @@ class XmasDisplayTools {
                 count--;
             }
             matches.sort()
-            elfMatchesEmbed.addFields({
-                name: `__For ${person.name}:__`,
-                value: matches.join(', ')
-            });
+
+            //Process people who aren't sending to all and add to embed
+            if (!sendingToEveryone.includes(person.name)) {
+                elfMatchesEmbed.addFields({
+                    name: `__For ${person.name}:__`,
+                    value: matches.join(', ')
+                });
+            }
         }
 
         return elfMatchesEmbed;
