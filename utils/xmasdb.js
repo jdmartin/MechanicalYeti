@@ -125,9 +125,16 @@ class XmasDisplayTools {
                 if (theCount == null) {
                     theCount = "all"
                 }
+
+                //Make this embed a little more concise
+                let theElfValue = "Number of Cards: " + theCount;
+                if (row.notes !== '') {
+                    theElfValue = "Number of Cards: " + theCount + "\nNotes: " + row.notes;
+                }
+
                 elvesEmbed.addFields({
                     name: `__${row.name}__`,
-                    value: "Number of Cards: " + theCount + "\nNotes: " + row.notes,
+                    value: theElfValue,
                     inline: false,
                 });
             });
