@@ -128,7 +128,8 @@ class XmasDisplayTools {
 
                 //Make this embed a little more concise
                 let theElfValue = "Number of Cards: " + theCount;
-                if (row.notes !== '') {
+
+                if (row.notes.trim() !== "''" && row.notes.length > 0) {
                     theElfValue = "Number of Cards: " + theCount + "\nNotes: " + row.notes;
                 }
 
@@ -220,7 +221,7 @@ class XmasDisplayTools {
         // Sort the sendingToEveryone array
         sendingToEveryone.sort();
         // Create a comma-separated list of names
-        let allMatchValue = sendingToEveryone.join(', ');
+        let allMatchValue = sendingToEveryone.join(' **|** ');
 
         //Add a bit of space.
         elfMatchesEmbed.addFields({
@@ -253,7 +254,7 @@ class XmasDisplayTools {
             if (!sendingToEveryone.includes(person.name)) {
                 elfMatchesEmbed.addFields({
                     name: `__For ${person.name}:__`,
-                    value: matches.join(', ')
+                    value: matches.join(' **|** ')
                 });
             }
         }
