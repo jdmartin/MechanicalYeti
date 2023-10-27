@@ -24,6 +24,13 @@ module.exports = {
                 // This is a required value
                 .setRequired(true);
 
+            const xmasRecipientsInput = new TextInputBuilder()
+                .setCustomId("xmasRecipientsInput")
+                .setLabel("What name(s) should we send to?")
+                .setPlaceholder("Ex: 'Evie' or 'Gilly & Moxie'")
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true);
+
             const xmasNotesInput = new TextInputBuilder()
                 .setCustomId("xmasNotesInput")
                 .setLabel("Anything we should know?")
@@ -40,12 +47,13 @@ module.exports = {
 
             // An action row only holds one text input,
             // so you need one action row per text input.
-            const firstActionRow = new ActionRowBuilder().addComponents(xmasCardsCountInput);
-            const secondActionRow = new ActionRowBuilder().addComponents(xmasNotesInput);
-            const thirdActionRow = new ActionRowBuilder().addComponents(xmasAddressInput);
+            const countActionRow = new ActionRowBuilder().addComponents(xmasCardsCountInput);
+            const notesActionRow = new ActionRowBuilder().addComponents(xmasNotesInput);
+            const addressActionRow = new ActionRowBuilder().addComponents(xmasAddressInput);
+            const recipientActionRow = new ActionRowBuilder().addComponents(xmasRecipientsInput);
 
             // Add inputs to the modal
-            modal.addComponents(firstActionRow, secondActionRow, thirdActionRow);
+            modal.addComponents(countActionRow, recipientActionRow, addressActionRow, notesActionRow);
 
             // Show the modal to the user
             await interaction.showModal(modal);
@@ -58,6 +66,8 @@ module.exports = {
                     const xmasCardsCount = collectedInteraction.fields.getTextInputValue("xmasCardsCountInput");
                     const xmasNotes = collectedInteraction.fields.getTextInputValue("xmasNotesInput");
                     const xmasAddress = collectedInteraction.fields.getTextInputValue("xmasAddressInput");
+                    const xmasRecipients = collectedInteraction.fields.getTextInputValue("xmasRecipientsInput");
+
                     var processedAddress = "";
                     if (xmasAddress.length == 0) {
                         processedAddress = "On File";
@@ -72,7 +82,7 @@ module.exports = {
                         theName = collectedInteraction.user.username;
                     }
 
-                    xmas.addElf(theName, xmasCardsCount, xmasNotes, processedAddress);
+                    xmas.addElf(theName, xmasCardsCount, xmasNotes, processedAddress, xmasRecipients);
 
                     let cardCountMessage = "";
 

@@ -12,7 +12,7 @@ let xmasdb = new sqlite3("./db/xmas.db");
 class CreateXmasDatabase {
     startup() {
         var xmasDBPrep = xmasdb.prepare(
-            "CREATE TABLE IF NOT EXISTS `elves` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT, `count` INTEGER, `notes` TEXT, `address` TEXT, year INTEGER)",
+            "CREATE TABLE IF NOT EXISTS `elves` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT, `count` INTEGER, `notes` TEXT, `address` TEXT, `year` INTEGER, `recipients` TEXT DEFAULT 'not given')",
         );
 
         xmasDBPrep.run();
@@ -22,25 +22,25 @@ class CreateXmasDatabase {
 class XmasTools {
     //Commands sanitize the input and add it to the DB.
 
-    addElf(name, count, notes, address) {
+    addElf(name, count, notes, address, recipient) {
         const selectElf = xmasdb.prepare("SELECT COUNT(*) AS count FROM elves WHERE name = ? AND year = ? LIMIT 1");
         var elfSelection = selectElf.pluck().get(name, currentYear);
 
         if (elfSelection > 0) {
-            this.updateElfInDB(parseInt(count), name, SqlString.escape(notes), SqlString.escape(address));
+            this.updateElfInDB(parseInt(count), name, SqlString.escape(notes), SqlString.escape(address), SqlString.escape(recipient));
         } else {
-            this.addElfToDB(parseInt(count), name, SqlString.escape(notes), SqlString.escape(address));
+            this.addElfToDB(parseInt(count), name, SqlString.escape(notes), SqlString.escape(address), SqlString.escape(recipient));
         }
     }
 
-    addElfToDB(count, name, notes, address) {
-        const elfInsert = xmasdb.prepare("INSERT INTO elves(name, count, notes, address, year) VALUES (?,?,?,?,?)");
-        elfInsert.run(name, count, notes, address, currentYear);
+    addElfToDB(count, name, notes, address, recipient) {
+        const elfInsert = xmasdb.prepare("INSERT INTO elves(name, count, notes, address, year, recipients) VALUES (?,?,?,?,?,?)");
+        elfInsert.run(name, count, notes, address, currentYear, recipient);
     }
 
-    updateElfInDB(count, name, notes, address) {
-        const elfUpdate = xmasdb.prepare("UPDATE elves SET count = ?, notes = ?, address = ? WHERE name = ? AND year = ?");
-        elfUpdate.run(count, notes, address, name, currentYear);
+    updateElfInDB(count, name, notes, address, recipient) {
+        const elfUpdate = xmasdb.prepare("UPDATE elves SET count = ?, notes = ?, address = ?, recipients = ? WHERE name = ? AND year = ?");
+        elfUpdate.run(count, notes, address, recipient, name, currentYear);
     }
 }
 
@@ -50,7 +50,7 @@ class XmasDisplayTools {
         const rows = elfExport.all();
 
         // Create a new Excel workbook and worksheet
-        const columnOrder = ['name', 'count', 'address', 'cust1', 'cust2', 'cust3', 'notes'];
+        const columnOrder = ['name', 'count', 'address', 'cust1', 'cust2', 'cust3', 'notes', 'recipients'];
         const columnMapping = {
             name: 'NAME',
             count: '# OF CARDS',
@@ -58,7 +58,8 @@ class XmasDisplayTools {
             address: 'ADDRESS',
             cust1: 'LIST SENT',
             cust2: 'LIST ACK',
-            cust3: 'CARDS RECEIVED'
+            cust3: 'CARDS RECEIVED',
+            recipients: 'RECIPIENT NAME(S)'
         };
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet(`elves-${currentYear}.xslx`);
@@ -82,6 +83,10 @@ class XmasDisplayTools {
             row.notes = row.notes.replace(/\\n/g, ', ');
             row.notes = row.notes.replace(/\\'/g, '\'');
             row.notes = row.notes.slice(1, -1);
+
+            row.recipients = row.recipients.replace(/\\n/g, ', ');
+            row.recipients = row.recipients.replace(/\\'/g, '\'');
+            row.recipients = row.recipients.slice(1, -1);
 
             // If count is 'null', then we probably have a case where the person chose 'all'
             if (row.count == null) {
