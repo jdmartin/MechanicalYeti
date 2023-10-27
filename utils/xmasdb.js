@@ -85,7 +85,7 @@ class XmasDisplayTools {
 
             // If count is 'null', then we probably have a case where the person chose 'all'
             if (row.count == null) {
-                row.count = "all (should verify)";
+                row.count = "all";
             }
 
             // Create an object representing the row with custom values
