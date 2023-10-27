@@ -12,7 +12,7 @@ let xmasdb = new sqlite3("./db/xmas.db");
 class CreateXmasDatabase {
     startup() {
         var xmasDBPrep = xmasdb.prepare(
-            "CREATE TABLE IF NOT EXISTS `elves` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT, `count` INTEGER, `notes` TEXT, `address` TEXT, `year` INTEGER, `recipients` TEXT)",
+            "CREATE TABLE IF NOT EXISTS `elves` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT, `count` INTEGER, `notes` TEXT, `address` TEXT, `year` INTEGER, `recipients` TEXT DEFAULT 'not given')",
         );
 
         xmasDBPrep.run();
