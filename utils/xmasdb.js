@@ -120,7 +120,6 @@ class XmasDisplayTools {
         const sendingToEveryone = [];
 
         // Create a comma-separated list of names
-        let allMatchValue = sendingToEveryone.join(' **|** ');
         var elfSql = xmasdb.prepare("SELECT * FROM elves WHERE year = ? ORDER BY name ASC");
         var elfResults = elfSql.all(currentYear);
         if (elfResults.length > 0) {
@@ -129,6 +128,9 @@ class XmasDisplayTools {
                 if (theCount == null) {
                     theCount = "all"
                     sendingToEveryone.push(row.name);
+                }
+                if (theCount === 0) {
+                    theCount = "receiving only"
                 }
 
                 //Make this embed a little more concise
@@ -227,13 +229,18 @@ class XmasDisplayTools {
         const allNames = preferencesResults.map(person => person.name);
 
         // Step 2: Set count to total names - 1 for those with null count
-        // Also, identify those people who are sending to all.
+        // Also, identify those people who are sending to all and those who are only receiving.
         const sendingToEveryone = [];
+        const onlyReceiving = [];
 
         for (let person of preferencesResults) {
             if (person.count === null) {
                 person.count = allNames.length - 1;
                 sendingToEveryone.push(person.name);
+            }
+
+            if (person.count === 0) {
+                onlyReceiving.push(person.name);
             }
         }
 
@@ -243,6 +250,14 @@ class XmasDisplayTools {
         let formattedList = "";
         sendingToEveryone.forEach((item, index) => {
             formattedList += (index + 1) + ": " + item + "\n";
+        });
+
+        // Sort the onlyReceiving array
+        onlyReceiving.sort();
+        // Create a list
+        let formattedReceiverList = "";
+        onlyReceiving.forEach((item, index) => {
+            formattedReceiverList += (index + 1) + ": " + item + "\n";
         });
 
         //Add a bit of space.
@@ -273,7 +288,7 @@ class XmasDisplayTools {
             matches.sort()
 
             //Process people who aren't sending to all and add to embed
-            if (!sendingToEveryone.includes(person.name)) {
+            if (!sendingToEveryone.includes(person.name) && !onlyReceiving.includes(person.name)) {
                 // Create a formatted list with numbering
                 const formattedMatches = matches.map((match, index) => `${index + 1}: ${match}`).join('\n');
                 elfMatchesEmbed.addFields({
@@ -282,6 +297,12 @@ class XmasDisplayTools {
                 });
             }
         }
+
+        //Add the list of people who are only receiving for special reasons
+        elfMatchesEmbed.addFields({
+            name: "__Only Receiving:__",
+            value: formattedReceiverList
+        });
 
         return elfMatchesEmbed;
     }
