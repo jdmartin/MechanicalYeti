@@ -7,7 +7,8 @@ module.exports = {
 
     async execute(interaction) {
         if (process.env.xmas_deadline_passed === "false") {
-            const modal = new ModalBuilder().setCustomId("xmasModal").setTitle("Christmas Card Swap!");
+            const uniqueCustomId = `xmasModal_${interaction.user.id}_${Date.now()}`;
+            const modal = new ModalBuilder().setCustomId(uniqueCustomId).setTitle("Christmas Card Swap!");
 
             // Create the text input components
             const xmasCardsCountInput = new TextInputBuilder()
