@@ -1,4 +1,4 @@
-const { ActionRowBuilder, EmbedBuilder, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle } = require("discord.js");
+const { ActionRowBuilder, DiscordAPIError, EmbedBuilder, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle } = require("discord.js");
 const xmasutils = require("../utils/xmasdb.js");
 const xmas = new xmasutils.XmasTools();
 
@@ -117,7 +117,13 @@ module.exports = {
                     });
                 }
             } catch (error) {
-                if (error.code === 'InteractionCollectorError') {
+                if (error instanceof DiscordAPIError && error.code === 10062) {
+                    console.log("User likely didn't finish. Caught 'Unknown Interaction' error.");
+                }
+                else if (error.code === 'InteractionAlreadyReplied') {
+                    console.log(`${interaction.user.tag} already replied.`);
+                }
+                else if (error.code === 'InteractionCollectorError') {
                     console.log(`${interaction.user.tag} timed out.`);
                 } else {
                     console.error(error);
