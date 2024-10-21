@@ -46,8 +46,8 @@ class XmasTools {
 
 class XmasDisplayTools {
     async export() {
-        const elfExport = xmasdb.prepare("SELECT * FROM elves");
-        const rows = elfExport.all();
+        const elfExport = xmasdb.prepare("SELECT * FROM elves WHERE year = ?");
+        const rows = elfExport.all(currentYear);
 
         // Create a new Excel workbook and worksheet
         const columnOrder = ['name', 'count', 'address', 'cust1', 'cust2', 'cust3', 'notes', 'recipients'];

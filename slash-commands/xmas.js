@@ -60,7 +60,7 @@ module.exports = {
             await interaction.showModal(modal);
 
             try {
-                const filter = (interaction) => interaction.customId === 'xmasModal';
+                const filter = (i) => i.customId === uniqueCustomId;
                 const collectedInteraction = await interaction.awaitModalSubmit({ filter, time: 300000 });
 
                 if (collectedInteraction) {
