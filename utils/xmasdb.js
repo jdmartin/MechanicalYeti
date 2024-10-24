@@ -264,10 +264,12 @@ class XmasDisplayTools {
         });
 
         // Add the list of people sending to all
-        elfMatchesEmbed.addFields({
-            name: "__Sending to Everyone:__",
-            value: formattedList
-        });
+        if (formattedList.length > 0) {
+            elfMatchesEmbed.addFields({
+                name: "__Sending to Everyone:__",
+                value: formattedList
+            });
+        }
 
         // Step 3 and 4: Create matches and print the list of names
         for (let person of preferencesResults) {
@@ -297,10 +299,12 @@ class XmasDisplayTools {
         }
 
         // Add the list of people who are only receiving for special reasons
-        elfMatchesEmbed.addFields({
-            name: "__Only Receiving:__",
-            value: formattedReceiverList
-        });
+        if (formattedReceiverList.length > 0) {
+            elfMatchesEmbed.addFields({
+                name: "__Only Receiving:__",
+                value: formattedReceiverList
+            });
+        }
 
         return elfMatchesEmbed;
     }
