@@ -240,7 +240,7 @@ class XmasDisplayTools {
 
         for (let person of preferencesResults) {
             if (person.count === null) {
-                person.count = allNames.length - 1;
+                person.count = allNames.length - 1;  // This ensures 'all' is treated as max-1
                 sendingToEveryone.push(person.name);
             }
 
@@ -251,27 +251,19 @@ class XmasDisplayTools {
 
         // Sort the sendingToEveryone array
         sendingToEveryone.sort();
-        // Create a list
-        let formattedList = "";
-        sendingToEveryone.forEach((item, index) => {
-            formattedList += (index + 1) + ": " + item + "\n";
-        });
+        let formattedList = sendingToEveryone.map((item, index) => `${index + 1}: ${item}`).join('\n');
 
         // Sort the onlyReceiving array
         onlyReceiving.sort();
-        // Create a list
-        let formattedReceiverList = "";
-        onlyReceiving.forEach((item, index) => {
-            formattedReceiverList += (index + 1) + ": " + item + "\n";
-        });
+        let formattedReceiverList = onlyReceiving.map((item, index) => `${index + 1}: ${item}`).join('\n');
 
-        //Add a bit of space.
+        // Add spacing to embed for better readability
         elfMatchesEmbed.addFields({
             name: "   ",
             value: "   "
         });
 
-        //Add the list of people sending to all
+        // Add the list of people sending to all
         elfMatchesEmbed.addFields({
             name: "__Sending to Everyone:__",
             value: formattedList
@@ -280,21 +272,22 @@ class XmasDisplayTools {
         // Step 3 and 4: Create matches and print the list of names
         for (let person of preferencesResults) {
             let count = person.count;
-            const availableNames = allNames.filter(name => name !== person.name);
+            // Create a fresh copy of available names for each person
+            let availableNames = allNames.filter(name => name !== person.name);
 
             const matches = [];
             while (count > 0 && availableNames.length > 0) {
                 const randomIndex = Math.floor(Math.random() * availableNames.length);
                 const match = availableNames[randomIndex];
                 matches.push(match);
-                availableNames.splice(randomIndex, 1);
+                availableNames.splice(randomIndex, 1);  // Remove selected name
                 count--;
             }
-            matches.sort()
 
-            //Process people who aren't sending to all and add to embed
+            matches.sort();
+
+            // Process people who aren't sending to all and add to embed
             if (!sendingToEveryone.includes(person.name) && !onlyReceiving.includes(person.name)) {
-                // Create a formatted list with numbering
                 const formattedMatches = matches.map((match, index) => `${index + 1}: ${match}`).join('\n');
                 elfMatchesEmbed.addFields({
                     name: `__For ${person.name}:__`,
@@ -303,7 +296,7 @@ class XmasDisplayTools {
             }
         }
 
-        //Add the list of people who are only receiving for special reasons
+        // Add the list of people who are only receiving for special reasons
         elfMatchesEmbed.addFields({
             name: "__Only Receiving:__",
             value: formattedReceiverList
