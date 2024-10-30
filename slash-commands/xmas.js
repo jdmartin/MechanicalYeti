@@ -61,7 +61,7 @@ module.exports = {
 
             try {
                 const filter = (i) => i.customId === uniqueCustomId;
-                const collectedInteraction = await interaction.awaitModalSubmit({ filter, time: 300000 });
+                const collectedInteraction = await interaction.awaitModalSubmit({ filter, time: 300_000 });
 
                 if (collectedInteraction) {
                     const xmasCardsCount = collectedInteraction.fields.getTextInputValue("xmasCardsCountInput");
