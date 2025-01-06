@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { MessageFlags, SlashCommandBuilder } = require("discord.js");
 
 const xmas = require("../utils/xmasdb.js");
 const xmasDBHelper = new xmas.XmasDisplayTools();
@@ -13,7 +13,7 @@ module.exports = {
         await interaction.reply({
             content: "Here's some suggested matches based on the elves' preferences:",
             embeds: [matches],
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         }).catch(error => {
             console.error(error);
         });

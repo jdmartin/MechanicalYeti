@@ -1,4 +1,4 @@
-const { ActionRowBuilder, DiscordAPIError, EmbedBuilder, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle } = require("discord.js");
+const { ActionRowBuilder, DiscordAPIError, EmbedBuilder, MessageFlags, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle } = require("discord.js");
 const xmasutils = require("../utils/xmasdb.js");
 const xmas = new xmasutils.XmasTools();
 
@@ -109,7 +109,7 @@ module.exports = {
 
                     await collectedInteraction.reply({
                         content: xmas_response,
-                        ephemeral: true,
+                        flags: MessageFlags.Ephemeral
                     });
 
                     await interaction.user.send({
@@ -147,7 +147,7 @@ module.exports = {
 
             await interaction.reply({
                 embeds: [elvesEmbed],
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             }).catch(error => {
                 console.error(error);
             });

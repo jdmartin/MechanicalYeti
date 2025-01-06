@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { MessageFlags, SlashCommandBuilder } = require("discord.js");
 
 const xmas = require("../utils/xmasdb.js");
 const xmasDBHelper = new xmas.XmasDisplayTools();
@@ -17,7 +17,7 @@ module.exports = {
             content: "Here's the elf information and the Excel file attachment:",
             embeds: [response, stats],
             files: [attachment],
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         }).catch(error => {
             console.error(error);
         });
