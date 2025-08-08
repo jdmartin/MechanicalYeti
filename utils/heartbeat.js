@@ -1,8 +1,20 @@
 const fs = require('fs');
 const http = require("http");
 const net = require('net');
+const os = require('os');
+const path = require('path');
 
 class Heartbeat {
+    constructor() {
+        this.socketPath = this.setSocketPath();
+    }
+
+    setSocketPath() {
+        return os.platform() === 'darwin'
+            ? '/tmp/yeti-socket.sock'
+            : '/run/yeti/yeti-socket.sock';
+    }
+
     startPushing() {
         function callURL() {
             const url = process.env.MONITOR_URL;
@@ -24,10 +36,9 @@ class Heartbeat {
 
     startSocket() {
         const cachedResponse = this.generateResponse();
-        const socketPath = '/tmp/yeti-socket.sock';
         // Remove the socket file if it exists
-        if (fs.existsSync(socketPath)) {
-            fs.unlinkSync(socketPath);
+        if (fs.existsSync(this.socketPath)) {
+            fs.unlinkSync(this.socketPath);
         }
 
         const unixServer = net.createServer(function (client) {
@@ -37,9 +48,9 @@ class Heartbeat {
         });
 
         // Start listening on the Unix socket
-        unixServer.listen(socketPath, function () {
-            fs.chmodSync(socketPath, '775');
-            console.log('Yeti socket started...');
+        unixServer.listen(this.socketPath, () => {
+            fs.chmodSync(this.socketPath, '775');
+            console.log('Yeti socket started on:', this.socketPath);
             console.log("Mechanical Yeti Chasing You!");
         });
 
@@ -49,8 +60,8 @@ class Heartbeat {
 
             unixServer.close(function () {
                 // Remove the socket file after server is closed
-                if (fs.existsSync(socketPath)) {
-                    fs.unlinkSync(socketPath);
+                if (fs.existsSync(this.socketPath)) {
+                    fs.unlinkSync(this.socketPath);
                 }
                 console.log('Server closed');
                 process.exit(0);
