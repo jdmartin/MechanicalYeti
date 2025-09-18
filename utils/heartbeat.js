@@ -1,8 +1,7 @@
-const fs = require('fs');
-const http = require("http");
-const net = require('net');
-const os = require('os');
-const path = require('path');
+import { chmodSync, existsSync, unlinkSync } from 'node:fs';
+import { get } from 'node:http';
+import { createServer } from 'node:net';
+import { platform } from 'node:os';
 
 class Heartbeat {
     constructor() {
@@ -10,7 +9,7 @@ class Heartbeat {
     }
 
     setSocketPath() {
-        return os.platform() === 'darwin'
+        return platform() === 'darwin'
             ? '/tmp/yeti-socket.sock'
             : '/run/yeti/yeti-socket.sock';
     }
@@ -19,7 +18,7 @@ class Heartbeat {
         function callURL() {
             const url = process.env.MONITOR_URL;
 
-            http.get(url, (response) => {
+            get(url, (response) => {
             }).on('error', (error) => {
                 console.error(`Error calling URL: ${error.message}`);
             });
@@ -37,11 +36,11 @@ class Heartbeat {
     startSocket() {
         const cachedResponse = this.generateResponse();
         // Remove the socket file if it exists
-        if (fs.existsSync(this.socketPath)) {
-            fs.unlinkSync(this.socketPath);
+        if (existsSync(this.socketPath)) {
+            unlinkSync(this.socketPath);
         }
 
-        const unixServer = net.createServer(function (client) {
+        const unixServer = createServer(function (client) {
             // Send the cached response to the connected client, then close the connection
             client.write(cachedResponse);
             client.end();
@@ -49,7 +48,7 @@ class Heartbeat {
 
         // Start listening on the Unix socket
         unixServer.listen(this.socketPath, () => {
-            fs.chmodSync(this.socketPath, '775');
+            chmodSync(this.socketPath, '775');
             console.log('Yeti socket started on:', this.socketPath);
             console.log("Mechanical Yeti Chasing You!");
         });
@@ -60,8 +59,8 @@ class Heartbeat {
 
             unixServer.close(function () {
                 // Remove the socket file after server is closed
-                if (fs.existsSync(this.socketPath)) {
-                    fs.unlinkSync(this.socketPath);
+                if (existsSync(this.socketPath)) {
+                    unlinkSync(this.socketPath);
                 }
                 console.log('Server closed');
                 process.exit(0);
@@ -82,7 +81,4 @@ class Heartbeat {
     }
 }
 
-
-module.exports = {
-    Heartbeat,
-};
+export { Heartbeat };

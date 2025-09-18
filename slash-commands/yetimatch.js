@@ -1,21 +1,18 @@
-const { MessageFlags, SlashCommandBuilder } = require("discord.js");
+import { MessageFlags, SlashCommandBuilder } from "discord.js";
 
-const xmas = require("../utils/xmasdb.js");
-const xmasDBHelper = new xmas.XmasDisplayTools();
+import { XmasDisplayTools } from "../utils/xmasdb.js";
+const xmasDBHelper = new XmasDisplayTools();
 
-module.exports = {
-    data: new SlashCommandBuilder().setName("yetimatch").setDescription("Let's match some friendly elves!"),
+export const data = new SlashCommandBuilder().setName("yetimatch").setDescription("Let's match some friendly elves!");
+export async function execute(interaction) {
+    let matches = xmasDBHelper.matches();
 
-    async execute(interaction) {
-        let matches = xmasDBHelper.matches();
-
-        // Reply to the interaction with the embed and the Excel file as an attachment
-        await interaction.reply({
-            content: "Here's some suggested matches based on the elves' preferences:",
-            embeds: [matches],
-            flags: MessageFlags.Ephemeral
-        }).catch(error => {
-            console.error(error);
-        });
-    },
-};
+    // Reply to the interaction with the embed and the Excel file as an attachment
+    await interaction.reply({
+        content: "Here's some suggested matches based on the elves' preferences:",
+        embeds: [matches],
+        flags: MessageFlags.Ephemeral
+    }).catch(error => {
+        console.error(error);
+    });
+}

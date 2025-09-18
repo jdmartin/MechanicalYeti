@@ -1,11 +1,9 @@
-const { AttachmentBuilder, EmbedBuilder } = require("discord.js");
-const sqlite3 = require("better-sqlite3");
-const ExcelJS = require('exceljs');
+import sqlite3 from "better-sqlite3";
+import { AttachmentBuilder, EmbedBuilder } from "discord.js";
+import ExcelJS from 'exceljs';
+import SqlString from "sqlstring";
 const currentDate = new Date();
 const currentYear = parseInt(currentDate.getFullYear());
-
-//Other Tools
-var SqlString = require("sqlstring");
 
 let xmasdb = new sqlite3("./db/xmas.db");
 
@@ -61,7 +59,7 @@ class XmasDisplayTools {
             cust3: 'CARDS RECEIVED',
             recipients: 'RECIPIENT NAME(S)'
         };
-        const workbook = new ExcelJS.Workbook();
+        const workbook = new ExcelJS.Workbook()
         const worksheet = workbook.addWorksheet(`elves-${currentYear}.xslx`);
 
         // Add headers to the worksheet
@@ -310,8 +308,4 @@ class XmasDisplayTools {
     }
 }
 
-module.exports = {
-    XmasTools,
-    CreateXmasDatabase,
-    XmasDisplayTools,
-};
+export { XmasTools, CreateXmasDatabase, XmasDisplayTools };

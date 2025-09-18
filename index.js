@@ -1,32 +1,29 @@
 //Load helper files
-const utils = require("./utils/speedyutils.js");
-const slash = require("./utils/deploy-slash-commands");
-const heart = require("./utils/heartbeat.js");
-const { ActivityType, InteractionType, MessageFlags } = require("discord.js");
-
-//Get some essential variables from the helper files:
-const client = utils.client;
+import { ActivityType, InteractionType, MessageFlags } from "discord.js";
+import { CreateXmasDatabase } from "./utils/xmasdb.js";
+import { client, CreateCommandSet } from "./utils/speedyutils.js";
+import { DeploySlashCommands } from "./utils/deploy-slash-commands.js";
+import { Heartbeat } from "./utils/heartbeat.js";
 
 //Load commands into array
-const speedyutils = new utils.CreateCommandSet();
+const speedyutils = new CreateCommandSet();
 speedyutils.generateSet();
-const slashutils = new slash.DeploySlashCommands();
+const slashutils = new DeploySlashCommands();
 slashutils.begin();
 
 //Initialize the xmas database:
 if (process.env.enable_xmas === "true") {
-    const xmasdb = require("./utils/xmasdb.js");
-    const xmas = new xmasdb.CreateXmasDatabase();
+    const xmas = new CreateXmasDatabase();
     xmas.startup();
 }
 
 //Once that's done, let's move on to main.
-client.once("ready", () => {
+client.once("clientReady", () => {
     // prints "Ready!" to the console once the bot is online
     client.user.setActivity("RAAAAAAR!", { type: ActivityType.Custom });
 
     //Start the heartbeat
-    const heartbeat = new heart.Heartbeat();
+    const heartbeat = new Heartbeat();
     if (process.env.heart_type === 'push') {
         heartbeat.startPushing();
     } else if (process.env.heart_type === 'socket') {

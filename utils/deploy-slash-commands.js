@@ -1,15 +1,26 @@
-const { REST, Routes } = require("discord.js");
-const fs = require("fs");
+import { REST, Routes } from "discord.js";
+import { readdirSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const commands = [];
-const commandFiles = fs.readdirSync("./slash-commands").filter((file) => {
-    if (process.env.enable_xmas === "false" && (file === "xmas.js" || file === "elves.js")) {
+const commandFiles = readdirSync(path.resolve(__dirname, "../slash-commands")).filter((file) => {
+    if (
+        process.env.enable_xmas === "false" &&
+        (file === "xmas.js" || file === "elves.js")
+    ) {
         return false; // Exclude the files if enable_xmas is false
     }
-    return file.endsWith(".js"); // Include all other .js files
+    return file.endsWith(".js");
 });
+
 for (const file of commandFiles) {
-    const command = require(`../slash-commands/${file}`);
+    const filePath = path.resolve(__dirname, `../slash-commands/${file}`);
+    const commandModule = await import(pathToFileURL(filePath).href);
+    const command = commandModule.default ?? commandModule; // handle default vs named export
     commands.push(command.data.toJSON());
 }
 
@@ -34,6 +45,4 @@ class DeploySlashCommands {
     }
 }
 
-module.exports = {
-    DeploySlashCommands,
-};
+export { DeploySlashCommands };
