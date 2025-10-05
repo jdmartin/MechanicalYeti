@@ -26,7 +26,7 @@ export async function execute(interaction) {
         const xmasRecipientsInput = new TextInputBuilder()
             .setCustomId("xmasRecipientsInput")
             .setLabel("What name(s) should we send to?")
-            .setPlaceholder("Ex: 'Evie' or 'Gilly & Moxie'")
+            .setPlaceholder("Ex: 'Evie & Gnome' or 'Speedy'")
             .setStyle(TextInputStyle.Short)
             .setRequired(true);
 
@@ -91,18 +91,17 @@ export async function execute(interaction) {
                     cardCountMessage = xmasCardsCount;
                 }
 
-                let xmas_response = `
-                    ${process.env.xmas_message}
-                    ${process.env.xmas_blankline}
-                    ${process.env.xmas_name}
-                    ${process.env.xmas_street}
-                    ${process.env.xmas_town}
-                    ${process.env.xmas_country}
-                    ${process.env.xmas_blankline}
-                    Reminder: I've got you down for ${cardCountMessage} cards.
-        
-                    ${process.env.xmas_instructions}
-                    `;
+				let xmas_response =
+                    `${process.env.xmas_message}\n` +
+                    `${process.env.xmas_blankline}\n` +
+                    `\t${process.env.xmas_name}\n` +
+                    `\t${process.env.xmas_street}\n` +
+                    `\t${process.env.xmas_town}\n` +
+                    `\t${process.env.xmas_country}\n` +
+                    `${process.env.xmas_blankline}\n` +
+                    `Reminder: I've got you down for ${cardCountMessage} cards.\n\n` +
+                    `${process.env.xmas_instructions}`;
+				
                 console.log(`${theName} will send ${cardCountMessage} cards. They added: ${xmasNotes}`);
 
                 await collectedInteraction.reply({

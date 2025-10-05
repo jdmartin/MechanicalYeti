@@ -60,13 +60,13 @@ class XmasDisplayTools {
             recipients: 'RECIPIENT NAME(S)'
         };
         const workbook = new ExcelJS.Workbook()
-        const worksheet = workbook.addWorksheet(`elves-${currentYear}.xslx`);
+        const worksheet = workbook.addWorksheet(`elves-${currentYear}`);
 
         // Add headers to the worksheet
         const headerRow = worksheet.addRow(columnOrder.map(column => columnMapping[column]));
         // Set column widths (adjust values as needed)
         headerRow.eachCell((cell, colNumber) => {
-            const columnWidths = [20, 20, 30, 10, 10, 15, 45]; // Example widths
+            const columnWidths = [20, 20, 30, 10, 10, 15, 45, 45]; // Example widths
             const columnIndex = colNumber - 1; // ExcelJS is 1-based index, array is 0-based
             worksheet.getColumn(colNumber).width = columnWidths[columnIndex];
         });
