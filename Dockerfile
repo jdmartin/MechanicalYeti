@@ -1,14 +1,14 @@
-FROM cgr.dev/chainguard/node
+FROM docker.io/library/node:lts-slim
 ENV NODE_ENV=production
+
+# Built 20 Oct 2025
 
 WORKDIR /app
 
-COPY --chown=node:node . .
+COPY . .
 
-RUN npm install --omit-dev
+RUN npm ci --omit-dev
 
-COPY . /app
+RUN mkdir -p /app/db
 
-EXPOSE 5320
-
-CMD [ "index.js" ]
+CMD ["node", "index.js"]
