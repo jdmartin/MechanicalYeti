@@ -1,7 +1,6 @@
 import sqlite3 from "better-sqlite3";
 import { AttachmentBuilder, EmbedBuilder } from "discord.js";
 import ExcelJS from 'exceljs';
-import SqlString from "sqlstring";
 const currentDate = new Date();
 const currentYear = parseInt(currentDate.getFullYear());
 
@@ -25,9 +24,9 @@ class XmasTools {
         var elfSelection = selectElf.pluck().get(name, currentYear);
 
         if (elfSelection > 0) {
-            this.updateElfInDB(parseInt(count), name, SqlString.escape(notes), SqlString.escape(address), SqlString.escape(recipient));
+            this.updateElfInDB(parseInt(count), name, notes, address, recipient);
         } else {
-            this.addElfToDB(parseInt(count), name, SqlString.escape(notes), SqlString.escape(address), SqlString.escape(recipient));
+            this.addElfToDB(parseInt(count), name, notes, address, recipient);
         }
     }
 
@@ -73,18 +72,10 @@ class XmasDisplayTools {
 
         // Add data rows to the worksheet
         rows.forEach(row => {
-            // Replace newline characters with ', ' in the address and notes fields
-            row.address = row.address.replace(/\\n/g, ', ');
-            row.address = row.address.replace(/\\'/g, '\'');
-            row.address = row.address.slice(1, -1);
-
-            row.notes = row.notes.replace(/\\n/g, ', ');
-            row.notes = row.notes.replace(/\\'/g, '\'');
-            row.notes = row.notes.slice(1, -1);
-
-            row.recipients = row.recipients.replace(/\\n/g, ', ');
-            row.recipients = row.recipients.replace(/\\'/g, '\'');
-            row.recipients = row.recipients.slice(1, -1);
+            // Just normalize newlines if needed, but no quote slicing
+            if (row.address) row.address = row.address.replace(/\n/g, ', ');
+            if (row.notes) row.notes = row.notes.replace(/\n/g, ', ');
+            if (row.recipients) row.recipients = row.recipients.replace(/\n/g, ', ');
 
             // If count is 'null', then we probably have a case where the person chose 'all'
             if (row.count == null) {
