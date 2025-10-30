@@ -7,7 +7,8 @@
   },
   "scripts": {
     "dev": "node --env-file=.env --test --watch index.js",
-    "start": "node --env-file=.env index.js"
+    "start": "node --env-file=.env index.js",
+    "test": "cd tests; for f in *.js; do echo \"→ Running $f\"; node \"$f\"; cd - || exit 1; done"
   },
   "type": "module"
 }
