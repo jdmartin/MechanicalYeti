@@ -132,3 +132,5 @@ dist
 # custom
 db/xmas.db
 Makefile
+tests/db/**.db
+tests/**.xlsx
