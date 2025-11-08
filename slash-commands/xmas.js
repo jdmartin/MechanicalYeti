@@ -11,13 +11,6 @@ export async function execute(interaction) {
         // stable modal ID per guild + user
         const modalCustomId = `xmasModal_${interaction.guildId}_${interaction.user.id}`;
 
-        // cancel any previous modal collector for this user (if they retried)
-        if (activeModalCollectors.has(interaction.user.id)) {
-            const oldCollector = activeModalCollectors.get(interaction.user.id);
-            if (oldCollector.stop) oldCollector.stop("replaced");
-            activeModalCollectors.delete(interaction.user.id);
-        }
-
         const modal = new ModalBuilder().setCustomId(modalCustomId).setTitle("Christmas Card Swap!");
 
         // Create the text input components
@@ -69,17 +62,21 @@ export async function execute(interaction) {
         // Show the modal to the user
         await interaction.showModal(modal);
 
+        // assign a unique token for this modal attempt
+        const currentToken = Symbol();
+        activeModalCollectors.set(interaction.user.id, currentToken);
+
         // Wait for modal submission
         const collectorPromise = interaction.awaitModalSubmit({
             filter: (i) => i.customId === modalCustomId && i.user.id === interaction.user.id,
             time: 300000, // 5 minutes
         });
 
-        // keep track so we can cancel on re-run
-        activeModalCollectors.set(interaction.user.id, collectorPromise);
-
         try {
             const collectedInteraction = await collectorPromise;
+
+            // only proceed if this is still the latest modal for this user
+            if (activeModalCollectors.get(interaction.user.id) !== currentToken) return;
             activeModalCollectors.delete(interaction.user.id);
 
             if (collectedInteraction) {
@@ -135,6 +132,8 @@ export async function execute(interaction) {
                 });
             }
         } catch (error) {
+            // only handle if this is still the latest modal for this user
+            if (activeModalCollectors.get(interaction.user.id) !== currentToken) return;
             activeModalCollectors.delete(interaction.user.id);
 
             if (error instanceof DiscordAPIError && error.code === 10062) {
