@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "better-sqlite3": "^12.1.0",
+    "better-sqlite3": "^12.4.1",
     "discord.js": "^14.12.1",
     "exceljs": "^4.3.0",
     "node-schedule": "^2.1.0"
