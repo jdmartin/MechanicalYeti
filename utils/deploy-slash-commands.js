@@ -8,10 +8,7 @@ const __dirname = path.dirname(__filename);
 
 const commands = [];
 const commandFiles = readdirSync(path.resolve(__dirname, "../slash-commands")).filter((file) => {
-    if (
-        process.env.enable_xmas === "false" &&
-        (file === "xmas.js" || file === "elves.js")
-    ) {
+    if (process.env.enable_xmas === "false" && (file === "xmas.js" || file === "elves.js")) {
         return false; // Exclude the files if enable_xmas is false
     }
     return file.endsWith(".js");

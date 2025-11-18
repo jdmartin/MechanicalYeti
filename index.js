@@ -24,9 +24,9 @@ client.once("clientReady", () => {
 
     //Start the heartbeat
     const heartbeat = new Heartbeat();
-    if (process.env.heart_type === 'push') {
+    if (process.env.heart_type === "push") {
         heartbeat.startPushing();
-    } else if (process.env.heart_type === 'socket') {
+    } else if (process.env.heart_type === "socket") {
         heartbeat.startSocket();
     }
 });
@@ -43,7 +43,10 @@ client.on("interactionCreate", async (interaction) => {
         await command.execute(interaction);
     } catch (error) {
         console.error(error);
-        return interaction.reply({ content: "There was an error while executing this command!", flags: MessageFlags.Ephemeral });
+        return interaction.reply({
+            content: "There was an error while executing this command!",
+            flags: MessageFlags.Ephemeral,
+        });
     }
 });
 
