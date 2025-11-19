@@ -1,6 +1,5 @@
 import sqlite3 from "better-sqlite3";
 import { AttachmentBuilder, EmbedBuilder } from "discord.js";
-import ExcelJS from 'exceljs';
 const currentDate = new Date();
 const currentYear = parseInt(currentDate.getFullYear());
 
@@ -31,12 +30,16 @@ class XmasTools {
     }
 
     addElfToDB(count, name, notes, address, recipient) {
-        const elfInsert = xmasdb.prepare("INSERT INTO elves(name, count, notes, address, year, recipients) VALUES (?,?,?,?,?,?)");
+        const elfInsert = xmasdb.prepare(
+            "INSERT INTO elves(name, count, notes, address, year, recipients) VALUES (?,?,?,?,?,?)",
+        );
         elfInsert.run(name, count, notes, address, currentYear, recipient);
     }
 
     updateElfInDB(count, name, notes, address, recipient) {
-        const elfUpdate = xmasdb.prepare("UPDATE elves SET count = ?, notes = ?, address = ?, recipients = ? WHERE name = ? AND year = ?");
+        const elfUpdate = xmasdb.prepare(
+            "UPDATE elves SET count = ?, notes = ?, address = ?, recipients = ? WHERE name = ? AND year = ?",
+        );
         elfUpdate.run(count, notes, address, recipient, name, currentYear);
     }
 }
@@ -46,65 +49,72 @@ class XmasDisplayTools {
         const elfExport = xmasdb.prepare("SELECT * FROM elves WHERE year = ?");
         const rows = elfExport.all(currentYear);
 
-        // Create a new Excel workbook and worksheet
-        const columnOrder = ['name', 'count', 'address', 'cust1', 'cust2', 'cust3', 'notes', 'recipients'];
+        const columnOrder = ["name", "count", "address", "cust1", "cust2", "cust3", "notes", "recipients"];
         const columnMapping = {
-            name: 'NAME',
-            count: '# OF CARDS',
-            notes: 'NOTES',
-            address: 'ADDRESS',
-            cust1: 'LIST SENT',
-            cust2: 'LIST ACK',
-            cust3: 'CARDS RECEIVED',
-            recipients: 'RECIPIENT NAME(S)'
+            name: "NAME",
+            count: "# OF CARDS",
+            notes: "NOTES",
+            address: "ADDRESS",
+            cust1: "LIST SENT",
+            cust2: "LIST ACK",
+            cust3: "CARDS RECEIVED",
+            recipients: "RECIPIENT NAME(S)",
         };
-        const workbook = new ExcelJS.Workbook()
-        const worksheet = workbook.addWorksheet(`elves-${currentYear}`);
 
-        // Add headers to the worksheet
-        const headerRow = worksheet.addRow(columnOrder.map(column => columnMapping[column]));
-        // Set column widths (adjust values as needed)
-        headerRow.eachCell((cell, colNumber) => {
-            const columnWidths = [20, 20, 30, 10, 10, 15, 45, 45]; // Example widths
-            const columnIndex = colNumber - 1; // ExcelJS is 1-based index, array is 0-based
-            worksheet.getColumn(colNumber).width = columnWidths[columnIndex];
-        });
+        // --- CSV ESCAPER ---
+        const csvEscape = (value) => {
+            if (value == null) return "";
 
-        // Add data rows to the worksheet
-        rows.forEach(row => {
-            // Just normalize newlines if needed, but no quote slicing
-            if (row.address) row.address = row.address.replace(/\n/g, ', ');
-            if (row.notes) row.notes = row.notes.replace(/\n/g, ', ');
-            if (row.recipients) row.recipients = row.recipients.replace(/\n/g, ', ');
+            let v = String(value);
 
-            // If count is 'null', then we probably have a case where the person chose 'all'
-            if (row.count == null) {
-                row.count = "all";
+            // Normalize newlines to LF
+            v = v.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+            // Quote if contains special chars OR leading/trailing whitespace
+            if (/[",\n\t]/.test(v) || /^\s|\s$/.test(v)) {
+                v = '"' + v.replace(/"/g, '""') + '"';
             }
 
-            // Create an object representing the row with custom values
-            const newRow = {
+            return v;
+        };
+
+        // --- Build CSV content ---
+        const csvLines = [];
+
+        // Header row
+        csvLines.push(columnOrder.map((col) => csvEscape(columnMapping[col])).join(","));
+
+        // Data rows
+        for (const row of rows) {
+            if (row.address) row.address = row.address.replace(/\n/g, ", ");
+            if (row.notes) row.notes = row.notes.replace(/\n/g, ", ");
+            if (row.recipients) row.recipients = row.recipients.replace(/\n/g, ", ");
+
+            const countVal = row.count == null ? "all" : row.count;
+
+            const mapped = {
                 ...row,
-                cust1: '', // Add custom value for cust1
-                cust2: '', // Add custom value for cust2
-                cust3: ''  // Add custom value for cust3
+                count: countVal,
+                cust1: "",
+                cust2: "",
+                cust3: "",
             };
 
-            // Map values to columns based on columnOrder
-            const values = columnOrder.map(column => newRow[column]);
-            worksheet.addRow(values);
+            const line = columnOrder.map((col) => csvEscape(mapped[col])).join(",");
+
+            csvLines.push(line);
+        }
+
+        // Join all lines with \r\n (Excel’s preferred end-of-line)
+        const csvContent = csvLines.join("\r\n");
+
+        const buffer = Buffer.from(csvContent, "utf8");
+
+        const attachment = new AttachmentBuilder(buffer, {
+            name: `elves-${currentYear}.csv`,
         });
 
-        // Save the Excel file to a buffer
-        const buffer = await workbook.xlsx.writeBuffer();
-
-        // Create a Discord.js attachment
-        const attachmentBuilder = new AttachmentBuilder(buffer, { name: `elves-${currentYear}.xlsx` });
-
-        // Return both the attachment and buffer
-        return {
-            attachment: attachmentBuilder,
-        };
+        return { attachment };
     }
 
     show() {
@@ -120,11 +130,11 @@ class XmasDisplayTools {
             elfResults.forEach((row) => {
                 let theCount = row.count;
                 if (theCount == null) {
-                    theCount = "all"
+                    theCount = "all";
                     sendingToEveryone.push(row.name);
                 }
                 if (theCount === 0) {
-                    theCount = "receiving only"
+                    theCount = "receiving only";
                 }
 
                 //Make this embed a little more concise
@@ -147,12 +157,12 @@ class XmasDisplayTools {
             // Create a list
             let formattedList = "";
             sendingToEveryone.forEach((item, index) => {
-                formattedList += (index + 1) + ". " + item + "\n";
+                formattedList += index + 1 + ". " + item + "\n";
             });
             // Add the list of people sending to all
             elvesEmbed.addFields({
                 name: "__Sending to Everyone:__",
-                value: formattedList
+                value: formattedList,
             });
         } else {
             elvesEmbed.addFields({
@@ -179,9 +189,12 @@ class XmasDisplayTools {
         var cardTotalResults = cardTotal.pluck().get(currentYear) + actualNumberCardsWherePeopleChoseAll;
 
         // People may have offered to send more than needed
-        var expectedCardMax = (allElfCountResults[0].name * (allElfCountResults[0].name - 1));
+        var expectedCardMax = allElfCountResults[0].name * (allElfCountResults[0].name - 1);
 
-        const elfStatsEmbed = new EmbedBuilder().setColor(0xffffff).setTitle("🧝‍♀️ Happy Little Stats 🧝").setFooter({ text: "Includes (Elves who chose 'all' - 1 (because self)) * Total Elves" });
+        const elfStatsEmbed = new EmbedBuilder()
+            .setColor(0xffffff)
+            .setTitle("🧝‍♀️ Happy Little Stats 🧝")
+            .setFooter({ text: "Includes (Elves who chose 'all' - 1 (because self)) * Total Elves" });
 
         if (cardTotalResults > 0) {
             let actualCardCount = cardTotalResults.toString();
@@ -194,7 +207,7 @@ class XmasDisplayTools {
                 name: `Maximum Possible Per Person:`,
                 value: (expectedCardMax / allElfCountResults[0].name).toString(),
                 inline: false,
-            })
+            });
 
             elfStatsEmbed.addFields({
                 name: `Current Number of Expected Cards for ${currentYear.toString()}:`,
@@ -220,7 +233,7 @@ class XmasDisplayTools {
         const preferencesResults = preferencesQuery.all(currentYear);
 
         // Create an array of names
-        const allNames = preferencesResults.map(person => person.name);
+        const allNames = preferencesResults.map((person) => person.name);
 
         // Step 2: Set count to total names - 1 for those with null count
         // Also, identify those people who are sending to all and those who are only receiving.
@@ -229,7 +242,7 @@ class XmasDisplayTools {
 
         for (let person of preferencesResults) {
             if (person.count === null) {
-                person.count = allNames.length - 1;  // This ensures 'all' is treated as max-1
+                person.count = allNames.length - 1; // This ensures 'all' is treated as max-1
                 sendingToEveryone.push(person.name);
             }
 
@@ -240,23 +253,23 @@ class XmasDisplayTools {
 
         // Sort the sendingToEveryone array
         sendingToEveryone.sort();
-        let formattedList = sendingToEveryone.map((item, index) => `${index + 1}: ${item}`).join('\n');
+        let formattedList = sendingToEveryone.map((item, index) => `${index + 1}: ${item}`).join("\n");
 
         // Sort the onlyReceiving array
         onlyReceiving.sort();
-        let formattedReceiverList = onlyReceiving.map((item, index) => `${index + 1}: ${item}`).join('\n');
+        let formattedReceiverList = onlyReceiving.map((item, index) => `${index + 1}: ${item}`).join("\n");
 
         // Add spacing to embed for better readability
         elfMatchesEmbed.addFields({
             name: "   ",
-            value: "   "
+            value: "   ",
         });
 
         // Add the list of people sending to all
         if (formattedList.length > 0) {
             elfMatchesEmbed.addFields({
                 name: "__Sending to Everyone:__",
-                value: formattedList
+                value: formattedList,
             });
         }
 
@@ -264,14 +277,14 @@ class XmasDisplayTools {
         for (let person of preferencesResults) {
             let count = person.count;
             // Create a fresh copy of available names for each person
-            let availableNames = allNames.filter(name => name !== person.name);
+            let availableNames = allNames.filter((name) => name !== person.name);
 
             const matches = [];
             while (count > 0 && availableNames.length > 0) {
                 const randomIndex = Math.floor(Math.random() * availableNames.length);
                 const match = availableNames[randomIndex];
                 matches.push(match);
-                availableNames.splice(randomIndex, 1);  // Remove selected name
+                availableNames.splice(randomIndex, 1); // Remove selected name
                 count--;
             }
 
@@ -279,10 +292,10 @@ class XmasDisplayTools {
 
             // Process people who aren't sending to all and add to embed
             if (!sendingToEveryone.includes(person.name) && !onlyReceiving.includes(person.name)) {
-                const formattedMatches = matches.map((match, index) => `${index + 1}: ${match}`).join('\n');
+                const formattedMatches = matches.map((match, index) => `${index + 1}: ${match}`).join("\n");
                 elfMatchesEmbed.addFields({
                     name: `__For ${person.name}:__`,
-                    value: formattedMatches
+                    value: formattedMatches,
                 });
             }
         }
@@ -291,7 +304,7 @@ class XmasDisplayTools {
         if (formattedReceiverList.length > 0) {
             elfMatchesEmbed.addFields({
                 name: "__Only Receiving:__",
-                value: formattedReceiverList
+                value: formattedReceiverList,
             });
         }
 
