@@ -1,9 +1,14 @@
+import { randomInt } from "node:crypto";
 import sqlite3 from "better-sqlite3";
 import { AttachmentBuilder, EmbedBuilder } from "discord.js";
 const currentDate = new Date();
 const currentYear = parseInt(currentDate.getFullYear());
 
 let xmasdb = new sqlite3("./db/xmas.db");
+
+function getRandomInt(max) {
+    return randomInt(0, max);
+}
 
 class CreateXmasDatabase {
     startup() {
@@ -281,7 +286,7 @@ class XmasDisplayTools {
 
             const matches = [];
             while (count > 0 && availableNames.length > 0) {
-                const randomIndex = Math.floor(Math.random() * availableNames.length);
+                const randomIndex = getRandomInt(availableNames.length);
                 const match = availableNames[randomIndex];
                 matches.push(match);
                 availableNames.splice(randomIndex, 1); // Remove selected name
