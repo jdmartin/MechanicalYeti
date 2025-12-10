@@ -28,5 +28,5 @@ scan:
     scanner:
         - sast
     skip-git-ignore: false
-    skip-path: ['node_modules']
+    skip-path: ['node_modules/*']
     skip-test: true
