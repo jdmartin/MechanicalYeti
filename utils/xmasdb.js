@@ -1,10 +1,10 @@
 import { randomInt } from "node:crypto";
-import sqlite3 from "better-sqlite3";
+import { DatabaseSync } from 'node:sqlite';
 import { AttachmentBuilder, EmbedBuilder } from "discord.js";
 const currentDate = new Date();
 const currentYear = parseInt(currentDate.getFullYear());
 
-let xmasdb = new sqlite3("./db/xmas.db");
+let xmasdb = new DatabaseSync("./db/xmas.db");
 
 function getRandomInt(max) {
     return randomInt(0, max);
@@ -12,11 +12,9 @@ function getRandomInt(max) {
 
 class CreateXmasDatabase {
     startup() {
-        var xmasDBPrep = xmasdb.prepare(
+        xmasdb.exec(
             "CREATE TABLE IF NOT EXISTS `elves` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT, `count` INTEGER, `notes` TEXT, `address` TEXT, `year` INTEGER, `recipients` TEXT DEFAULT 'not given')",
         );
-
-        xmasDBPrep.run();
     }
 }
 
@@ -25,9 +23,9 @@ class XmasTools {
 
     addElf(name, count, notes, address, recipient) {
         const selectElf = xmasdb.prepare("SELECT COUNT(*) AS count FROM elves WHERE name = ? AND year = ? LIMIT 1");
-        var elfSelection = selectElf.pluck().get(name, currentYear);
+        var elfSelection = selectElf.get(name, currentYear);
 
-        if (elfSelection > 0) {
+        if (elfSelection.count > 0) {
             this.updateElfInDB(parseInt(count), name, notes, address, recipient);
         } else {
             this.addElfToDB(parseInt(count), name, notes, address, recipient);
@@ -110,7 +108,7 @@ class XmasDisplayTools {
             csvLines.push(line);
         }
 
-        // Join all lines with \r\n (Excel’s preferred end-of-line)
+        // Join all lines with \r\n (Excel's preferred end-of-line)
         const csvContent = csvLines.join("\r\n");
 
         const buffer = Buffer.from(csvContent, "utf8");
@@ -182,16 +180,16 @@ class XmasDisplayTools {
 
     stats() {
         // Get something to replace 'all' in the count
-        var numberWhoChoseAll = xmasdb.prepare("SELECT COUNT(*) name FROM elves WHERE count IS NULL AND year = ?;");
+        var numberWhoChoseAll = xmasdb.prepare("SELECT COUNT(*) AS name FROM elves WHERE count IS NULL AND year = ?;");
         var numberWhoChoseAllResults = numberWhoChoseAll.all(currentYear);
 
-        var allElfCount = xmasdb.prepare("SELECT COUNT(*) name FROM elves WHERE year = ?;");
+        var allElfCount = xmasdb.prepare("SELECT COUNT(*) AS name FROM elves WHERE year = ?;");
         var allElfCountResults = allElfCount.all(currentYear);
 
         var actualNumberCardsWherePeopleChoseAll = (numberWhoChoseAllResults[0].name - 1) * allElfCountResults[0].name;
 
-        var cardTotal = xmasdb.prepare("SELECT SUM(count) FROM elves WHERE year = ?");
-        var cardTotalResults = cardTotal.pluck().get(currentYear) + actualNumberCardsWherePeopleChoseAll;
+        var cardTotal = xmasdb.prepare("SELECT SUM(count) AS total FROM elves WHERE year = ?");
+        var cardTotalResults = (cardTotal.get(currentYear).total ?? 0) + actualNumberCardsWherePeopleChoseAll;
 
         // People may have offered to send more than needed
         var expectedCardMax = allElfCountResults[0].name * (allElfCountResults[0].name - 1);
